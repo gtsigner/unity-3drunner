@@ -8,34 +8,39 @@ using UnityEngine.SceneManagement;
 public class GameManager : MonoBehaviour
 {
 
-    #region fields
-    private int _score = 0;
-    private int _floorCount = 1;
-    public int Score
-    {
-        get
-        {
-            return _score;
-        }
+    #region 
+    public PlayInfoModel playInfo;
+    public delegate void PlayInfoChangeEvent(PlayInfoModel playInfo);
 
-        set
-        {
-            _score = value;
-        }
-    }
-    public int FloorCount
+    internal void UpFloor()
     {
-        get
-        {
-            return _floorCount;
-        }
+        this.playInfo.FloorCount++;
+        //增加速度
+        this.playInfo.MoveSpeed += 20f;
 
-        set
-        {
-            _floorCount = value;
-        }
+
     }
+
+    public event PlayInfoChangeEvent playInfoChangeEvent;
+
+    private GameState gameState = GameState.Start;
+
     #endregion
+    public GameState GameState
+    {
+        get
+        {
+            return gameState;
+        }
+
+        set
+        {
+            gameState = value;
+        }
+    }
+
+    //5s 跑5m
+    private float scoreUpSpeed = 2f;
 
     void Awake()
     {
@@ -49,16 +54,16 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    private void Start()
+    {
+        this.RestoreTotal();
+    }
 
     private static GameManager instance;
     public static GameManager Instance
     {
         get
         {
-            if (instance == null)
-            {
-                instance = new GameManager();
-            }
             return instance;
         }
     }
@@ -69,10 +74,27 @@ public class GameManager : MonoBehaviour
         CanSwipe = false;
     }
 
-    public GameState GameState { get; set; }
+
 
     public bool CanSwipe { get; set; }
 
+
+    //用户得分
+    private void Update()
+    {
+        scoreUpSpeed -= Time.deltaTime;
+        if (this.scoreUpSpeed <= 0)
+        {
+            playInfo.Score++;
+            scoreUpSpeed = 2f;
+            //通知
+            if (this.playInfoChangeEvent != null)
+            {
+                this.playInfoChangeEvent(this.playInfo);
+            }
+        }
+
+    }
 
     //重新开始游戏
     public void ReplayGame()
@@ -83,17 +105,28 @@ public class GameManager : MonoBehaviour
 
     public void PlayerDie()
     {
-        //UIManager.Instance.SetStatus(Constants.StatusDeadTapToStart);
-        //this.GameState = GameState.Dead; 
+
+
     }
 
     //重置
     private void RestoreTotal()
     {
-        this._score = 0;
-        this._floorCount = 1;
+        this.playInfo = new PlayInfoModel();
+        this.playInfo.MoveSpeed = 200;
+        this.playInfo.Score = 0;
+        this.playInfo.FloorCount = 1;
+        this.playInfoChangeEvent(this.playInfo);
     }
 
+    internal void PauseGame()
+    {
+        Time.timeScale = 0;
+    }
+    internal void RePauseStartGame()
+    {
+        Time.timeScale = 1;
+    }
 }
 
 

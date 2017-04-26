@@ -58,8 +58,8 @@ public class UIManager : MonoBehaviour
     //更新
     private void FixedUpdate()
     {
-        this.scoreText.text = "Score:" + GameManager.Instance.Score;
-        this.floorText.text = "Floor:" + GameManager.Instance.FloorCount;
+        this.scoreText.text = "Score:" + GameManager.Instance.playInfo.Score;
+        this.floorText.text = "Floor:" + GameManager.Instance.playInfo.FloorCount;
     }
 
     //暂停游戏
@@ -97,12 +97,16 @@ public class UIManager : MonoBehaviour
     public void OnPauseBtnClick()
     {
         this.PauseGameCb();
+        //调用GameManager暂停游戏
+
+        GameManager.Instance.PauseGame();
     }
 
     //播放按钮
     public void OnReBeginBtnClick()
     {
         this.BeginGameCb();
+        GameManager.Instance.RePauseStartGame();
     }
 
     //回到start场景
